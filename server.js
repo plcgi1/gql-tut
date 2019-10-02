@@ -1,21 +1,17 @@
-const express = require('express');
-const { ApolloServer } = require('apollo-server-express');
-const cors = require('cors')
+process.env.NODE_ENV = process.env.NODE_ENV || 'development'
 
-const resolvers = require('./resolvers')
-const schema = require('./schemas')
+const path = require('path')
+const express = require('express')
 
-const app = express();
+const config = require('./config/environment')
 
-app.use(cors());
+// Connect to database with models loading
+require('./src/models')
 
-const server = new ApolloServer({
-  typeDefs: schema,
-  resolvers,
-});
+const app = express()
 
-server.applyMiddleware({ app, path: '/graphql' });
+require(path.resolve('./config/express'))(app)
 
-app.listen({ port: 8000 }, () => {
-  console.log('Apollo Server on http://localhost:8000/graphql');
-});
+app.listen({ port: config.port }, () => {
+  console.log(`Apollo Server on http://localhost:${config.port}/graphql with env ${config.env}`)
+})

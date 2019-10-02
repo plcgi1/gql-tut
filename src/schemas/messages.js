@@ -5,13 +5,13 @@ module.exports = gql`
     messages: [Message!]!
     message(id: ID!): Message!
   }
-  extend type Mutation {
-    createMessage(text: String!, userId: String!): Message!
-    deleteMessage(id: ID!): Boolean!
-  }
   type Message {
     id: ID!
     text: String!
-    user: User!
+    owner: User!
+    recipient: User!
   }
-`;
+  extend type Mutation {
+    createMessage(text: String!, ownerId: ID!, recipientId: ID!): Message!
+  }
+`
