@@ -1,9 +1,7 @@
-process.env.NODE_ENV = process.env.NODE_ENV || 'development'
+const config = require('./config/environment')
 
 const path = require('path')
 const express = require('express')
-
-const config = require('./config/environment')
 
 // Connect to database with models loading
 require('./src/models')

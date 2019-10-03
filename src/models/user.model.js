@@ -34,6 +34,15 @@ module.exports = (sequelize, DataTypes) => {
           notEmpty: true
         }
       },
+      status: {
+        type: DataTypes.ENUM,
+        values: Object.values(USER_STATUSES),
+        defaultValue: USER_STATUSES.waiting2confirmation,
+        allowNull: false,
+        validate: {
+          notEmpty: true
+        }
+      },
       password: {
         type: DataTypes.VIRTUAL,
         set: function (val) {
@@ -48,7 +57,7 @@ module.exports = (sequelize, DataTypes) => {
           }
         }
       },
-      encrypted_password: {
+      encryptedPassword: {
         type: DataTypes.STRING,
         validate: {
           notEmpty: true
@@ -78,7 +87,7 @@ module.exports = (sequelize, DataTypes) => {
         attributes: {
           exclude: [
             'password',
-            'encrypted_password',
+            'encryptedPassword',
             'lastJwtString',
             'resetPasswordHash'
           ]
@@ -89,14 +98,14 @@ module.exports = (sequelize, DataTypes) => {
           attributes: {
             exclude: [
               'password',
-              'encrypted_password',
+              'encryptedPassword',
               'lastJwtString',
               'resetPasswordHash'
             ]
           }
         },
         jwt: {
-          attributes: ['id', 'email', 'encrypted_password', 'status', 'role', 'lastJwtString']
+          attributes: ['id', 'email', 'encryptedPassword', 'status', 'role', 'lastJwtString']
         }
       },
       indexes: [{ unique: true, fields: ['email'] }]
@@ -104,11 +113,11 @@ module.exports = (sequelize, DataTypes) => {
   )
 
   User.prototype.validPassword = (password) => {
-    return bcrypt.compareSync(password, this.encrypted_password)
+    return bcrypt.compareSync(password, this.encryptedPassword)
   }
 
   User.beforeCreate(async (user) => {
-    user.encrypted_password = await bcrypt.hash(user.password, BCRYPT_SALT)
+    user.encryptedPassword = await bcrypt.hash(user.password, BCRYPT_SALT)
     if (!user.status) {
       user.status = USER_STATUSES.waiting2confirmation
     }
@@ -116,13 +125,16 @@ module.exports = (sequelize, DataTypes) => {
   })
   User.beforeUpdate(async (user) => {
     if (user.password) {
-      user.encrypted_password = await bcrypt.hash(user.password, BCRYPT_SALT)
+      user.encryptedPassword = await bcrypt.hash(user.password, BCRYPT_SALT)
     }
 
     return true
   })
 
-  // TODO associate relations
+  User.associate = models => {
+    User.hasMany(models.Message, { onDelete: 'CASCADE', foreignKey: 'ownerId', as: 'owner' });
+    User.hasMany(models.Message, { onDelete: 'CASCADE', foreignKey: 'recipientId', as: 'recipient' });
+  };
 
   return User
 }

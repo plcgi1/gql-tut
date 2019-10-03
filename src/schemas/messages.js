@@ -13,5 +13,6 @@ module.exports = gql`
   }
   extend type Mutation {
     createMessage(text: String!, ownerId: ID!, recipientId: ID!): Message!
+    deleteMessage(id: ID!): Boolean!
   }
 `

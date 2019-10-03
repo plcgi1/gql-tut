@@ -1,4 +1,4 @@
-const { ROLES } = require('../src/helpers/enums')
+const { USER_STATUSES, ROLES } = require('../src/helpers/enums')
 
 module.exports = {
   up: (queryInterface, Sequelize) => {
@@ -13,7 +13,7 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false
       },
-      encrypted_password: {
+      encryptedPassword: {
         type: Sequelize.STRING,
         validate: {
           notEmpty: true
@@ -23,6 +23,15 @@ module.exports = {
         type: Sequelize.ENUM,
         values: Object.values(ROLES),
         defaultValue: ROLES.user,
+        allowNull: false,
+        validate: {
+          notEmpty: true
+        }
+      },
+      status: {
+        type: Sequelize.ENUM,
+        values: Object.values(USER_STATUSES),
+        defaultValue: USER_STATUSES.waiting2confirmation,
         allowNull: false,
         validate: {
           notEmpty: true
