@@ -89,7 +89,8 @@ module.exports = (sequelize, DataTypes) => {
             'password',
             'encryptedPassword',
             'lastJwtString',
-            'resetPasswordHash'
+            'resetPasswordHash',
+            'confirmHash'
           ]
         }
       },
@@ -111,10 +112,6 @@ module.exports = (sequelize, DataTypes) => {
       indexes: [{ unique: true, fields: ['email'] }]
     }
   )
-
-  User.prototype.validPassword = (password) => {
-    return bcrypt.compareSync(password, this.encryptedPassword)
-  }
 
   User.beforeCreate(async (user) => {
     user.encryptedPassword = await bcrypt.hash(user.password, BCRYPT_SALT)

@@ -16,7 +16,18 @@ const schema = require('../src/schemas')
 module.exports = (app) => {
   const server = new ApolloServer({
     typeDefs: schema,
-    resolvers
+    resolvers,
+    formatError: error => {
+      // remove the internal sequelize error message
+      // leave only the important validation error
+      const message = error.message
+        .replace('SequelizeValidationError: ', '')
+        .replace('Validation error: ', '');
+      return {
+        ...error,
+        message,
+      };
+    }
   })
 
   server.applyMiddleware({ app, path: '/graphql' })
