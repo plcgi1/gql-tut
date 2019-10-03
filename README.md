@@ -11,4 +11,6 @@ postgres=# DROP database "gql"
 postgres=# CREATE database "gql"
 
 console#> npm run migrate
+# insert test users
+console#> npm run seed
 ```
