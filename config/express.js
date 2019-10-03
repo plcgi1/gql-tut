@@ -12,8 +12,11 @@ const config = require(path.resolve('./config/environment'))
 
 const resolvers = require('../src/resolvers')
 const schema = require('../src/schemas')
+const UserProvider = require('../src/providers/user.provider')
 
 module.exports = (app) => {
+  let logger
+
   const server = new ApolloServer({
     typeDefs: schema,
     resolvers,
@@ -23,18 +26,23 @@ module.exports = (app) => {
       const message = error.message
         .replace('SequelizeValidationError: ', '')
         .replace('Validation error: ', '');
+      logger.error('EEEEE', error)
       return {
         ...error,
         message,
       };
+    },
+
+    context: async ({ req }) => {
+      const userProvider = new UserProvider()
+      const result = await userProvider.getContext(req)
+
+      return result
     }
   })
 
   server.applyMiddleware({ app, path: '/graphql' })
-
   log4js.configure(config.log4js)
-
-  let logger
 
   const env = app.get('env')
 

@@ -97,4 +97,15 @@ module.exports = class UserProvider {
 
     return { data, count }
   }
+
+  async getContext (req) {
+    const token = await AuthProvider.verifyToken(req)
+    if (!token) return {}
+
+    const user = await this.getById(token.id)
+    if (!user) {
+      throw new AuthenticationError('No such user')
+    }
+    return { me: user };
+  }
 }

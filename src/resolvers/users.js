@@ -1,5 +1,5 @@
+const { combineResolvers } = require('graphql-resolvers')
 const UserProvider = require('../providers/user.provider')
-const AuthProvider = require('../providers/auth.provider')
 
 module.exports = {
   Query: {
