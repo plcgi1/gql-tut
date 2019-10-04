@@ -2,6 +2,7 @@ const { combineResolvers } = require('graphql-resolvers')
 const UserProvider = require('../providers/user.provider')
 const { ROLES } = require('../helpers/enums')
 const { isAuthenticated, isUserRoleCan } = require('../providers/auth.provider')
+const sortConditions = require('../helpers/sort-conditions')
 
 module.exports = {
   Query: {
@@ -14,9 +15,11 @@ module.exports = {
     users: combineResolvers(
       isAuthenticated,
       isUserRoleCan(ROLES.root),
-      async () => {
+      async (parent, { limit, offset, sort }) => {
         const provider = new UserProvider()
-        const result = provider.list()
+        const order = sortConditions(sort)
+
+        const result = provider.list({}, {}, { limit, offset }, order)
 
         return result
       }

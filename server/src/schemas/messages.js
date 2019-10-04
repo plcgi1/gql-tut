@@ -2,8 +2,12 @@ const { gql } = require('apollo-server-express');
 
 module.exports = gql`
   extend type Query {
-    messages: [Message!]!
+    messages(limit: Int, offset: Int, sort: String): MessageList
     message(id: ID!): Message!
+  }
+  type MessageList {
+    count: String!
+    data: [Message]
   }
   type Message {
     id: ID!
@@ -12,7 +16,7 @@ module.exports = gql`
     recipient: User!
   }
   extend type Mutation {
-    createMessage(text: String!, ownerId: ID!, recipientId: ID!): Message!
+    createMessage(text: String!, recipientId: ID!): Message!
     deleteMessage(id: ID!): Boolean!
   }
 `

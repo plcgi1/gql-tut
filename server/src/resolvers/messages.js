@@ -1,59 +1,40 @@
 const { combineResolvers } = require('graphql-resolvers')
 const { Message, User } = require('../models')
 const { isAuthenticated } = require('../providers/auth.provider')
+const MessageProvider = require('../providers/message.provider')
+const sortConditions = require('../helpers/sort-conditions')
 
 const resolvers = {
   Query: {
-    messages: async () => {
-      const data = await Message.findAll({
-        include: [
-          {
-            model: User,
-            required: true,
-            as: 'owner'
-          },
-          {
-            model: User,
-            required: true,
-            as: 'recipient'
-          }
-        ]
-      })
-      return data
+    messages: async (parent, { limit, offset, sort }) => {
+      const order = sortConditions(sort)
+      const provider = new MessageProvider()
+      const result = provider.list({}, [], { limit, offset }, order)
+
+      return result
     },
     message: async (parent, { id }) => {
-      const data = await Message.findByPk(
-        id,
-        {
-          include: [
-            {
-              model: User,
-              required: true,
-              as: 'owner'
-            },
-            {
-              model: User,
-              required: true,
-              as: 'recipient'
-            }
-          ]
-        }
-      )
-      return data
+      const provider = new MessageProvider()
+      const result = provider.get(id)
+      return result
     }
   },
   Mutation: {
     createMessage: combineResolvers(
       isAuthenticated,
-      async (parent, { text, ownerId, recipientId }, { me }) => {
-        const result = await Message.create({
-          text, ownerId, recipientId
+      async (parent, { text, recipientId }, { me }) => {
+        const provider = new MessageProvider()
+
+        const result = await provider.create({
+          text, ownerId: me.id, recipientId
         })
         return result
       }
     ),
-    deleteMessage: async (parent, { id }, { models }) => {
-      return await models.Message.destroy({ where: { id } });
+    deleteMessage: async (parent, { id }, { me }) => {
+      const provider = new MessageProvider()
+      const result = await provider.remove(id, me.id)
+      return result
     }
   }
 }

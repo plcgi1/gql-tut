@@ -1,22 +1,8 @@
 const { User } = require('../models')
-const { AuthenticationError, UserInputError } = require('apollo-server');
-const { USER_STATUSES } = require('../helpers/enums')
-// const { generateEmailFromOauthProfile } = require('../helpers/generators')
+const { AuthenticationError, UserInputError } = require('apollo-server')
 const AuthProvider = require('./auth.provider')
 
 module.exports = class UserProvider {
-  // fillOauthParams (profile) {
-  //   if (profile.email) {
-  //     profile.status = USER_STATUSES.ready
-  //   } else {
-  //     profile.status = USER_STATUSES.waiting2confirmation
-  //     // sometimes Facebook doesnt provide email - we need set it here from generate func
-  //     profile.email = generateEmailFromOauthProfile(profile)
-  //   }
-  //
-  //   return profile
-  // }
-
   async getByEmail (email, options = {}) {
     let user
     if (options.scope) {
@@ -42,10 +28,10 @@ module.exports = class UserProvider {
     userData.lastJwtString = authProvider.generateRandomString()
     userData.confirmHash = authProvider.generateRandomString(48)
 
-    const user = await this.create(userData);
+    const user = await this.create(userData)
 
     const result = authProvider.createToken(user)
-    return result;
+    return result
   }
 
   async login ({ email, password }) {
@@ -54,14 +40,14 @@ module.exports = class UserProvider {
     const user = await this.getByEmail(email, { scope: 'jwt' })
     if (!user) {
       throw new UserInputError(
-        'No user found with this login credentials.',
-      );
+        'No user found with this login credentials.'
+      )
     }
 
-    const isValid = await authProvider.comparePassword(password, user.encryptedPassword);
+    const isValid = await authProvider.comparePassword(password, user.encryptedPassword)
 
     if (!isValid) {
-      throw new AuthenticationError('Invalid password.');
+      throw new AuthenticationError('Invalid password.')
     }
 
     const result = authProvider.createToken(user)
@@ -87,9 +73,10 @@ module.exports = class UserProvider {
     }
   }
 
-  async list (where, include = [], pagination = { offset: 0, limit: 10 }) {
+  async list (where, include = [], pagination = { offset: 0, limit: 10 }, order = ['createdAt', 'DESC']) {
     const data = await User.scope('list').findAll({
       where,
+      order,
       limit: pagination.limit,
       offset: pagination.offset
     })
